@@ -108,6 +108,13 @@ class DigitClassifierFlow(FlowSpec):
     # --
     # aggregate scores using `inputs`
     # best_index = ...
+    best_score = float("inf")
+    for i in range(len(list(inputs))):
+      score = inputs[i].callback.best_model_score
+      scores.append(score)
+      if score < best_score:
+        best_score = score
+        best_index = i
     #
     # Type:
     # --

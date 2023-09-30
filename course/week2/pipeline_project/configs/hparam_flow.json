@@ -8,7 +8,7 @@
       "width": 64
     },
     "optimizer": {
-      "max_epochs": 10,
+      "max_epochs": 10, 
       "batch_size": 32,
       "lr": 4e-3
     },
