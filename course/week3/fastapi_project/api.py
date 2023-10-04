@@ -133,6 +133,7 @@ def predict(request: Request, body: InferenceInput):
     # Types:
     # --
     # logits: torch.Tensor (shape: 1x10)
+    logits = system.predict(im)
     # ================================
 
     # To extract the label, just find the largest logit.
@@ -154,6 +155,7 @@ def predict(request: Request, body: InferenceInput):
     # Types:
     # --
     # probs: torch.Tensor (shape: 1x10)
+    probs = F.softmax(logits, dim=-1)
     # ================================
     probs = probs.squeeze(0)        # squeeze to (10) shape
     probs = probs.numpy().tolist()  # convert tensor to list
