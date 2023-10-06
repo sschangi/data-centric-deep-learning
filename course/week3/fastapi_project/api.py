@@ -133,7 +133,7 @@ def predict(request: Request, body: InferenceInput):
     # Types:
     # --
     # logits: torch.Tensor (shape: 1x10)
-    logits = system.predict(im)
+    logits = system(im)
     # ================================
 
     # To extract the label, just find the largest logit.

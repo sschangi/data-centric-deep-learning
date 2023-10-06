@@ -167,10 +167,30 @@ class TrainIdentifyReview(FlowSpec):
       # Types:
       # --
       # probs_: np.array[float] (shape: |test set|)
+      X_train, X_test = X[train_index], X[test_index]
+      y_train, y_test = y[train_index], y[test_index]
+      X_train = torch.Tensor(X_train).float()
+      X_test = torch.Tensor(X_test).float()
+      y_train = torch.Tensor(y_train).long()
+      y_test = torch.Tensor(y_test).long()
+
+      ds_train = TensorDataset(X_train, y_train)
+      ds_test = TensorDataset(X_test, y_test)
+      dl_train = DataLoader(ds_train, batch_size=32, shuffle=True, drop_last=True)
+      dl_test = DataLoader(ds_test, batch_size=32, drop_last=True)
+
+      system = SentimentClassifierSystem(self.config)
+
+      trainer = Trainer(max_epochs=10)
+      trainer.fit(system, dl_train)
+      probs_ = trainer.predict(system, dataloaders=dl_test)
+      
+      probs_= np.concatenate([p.numpy() for p in probs_], axis=0)
       # ===============================================
       assert probs_ is not None, "`probs_` is not defined."
-      probs[test_index] = probs_
-
+      
+      probs[test_index.reshape(-1,1)] = probs_
+      
     # create a single dataframe with all input features
     all_df = pd.concat([
       self.dm.train_dataset.data,
@@ -211,6 +231,7 @@ class TrainIdentifyReview(FlowSpec):
     # Types
     # --
     # ranked_label_issues: List[int]
+    ranked_label_issues = find_label_issues(self.all_df.label, prob, return_indices_ranked_by='self_confidence')
     # =============================
     assert ranked_label_issues is not None, "`ranked_label_issues` not defined."
 
@@ -307,6 +328,15 @@ class TrainIdentifyReview(FlowSpec):
     # dm.train_dataset.data = training slice of self.all_df
     # dm.dev_dataset.data = dev slice of self.all_df
     # dm.test_dataset.data = test slice of self.all_df
+
+    # Calculate the indices for each dataset split based on their original sizes
+    train_end = train_size
+    dev_end = train_size + dev_size
+
+    # Update the dataframes in the datasets
+    dm.train_dataset.data = self.all_df[:train_end].reset_index(drop=True)
+    dm.dev_dataset.data = self.all_df[train_end:dev_end].reset_index(drop=True)
+    dm.test_dataset.data = self.all_df[dev_end:].reset_index(drop=True)
     # # ====================================
 
     # start from scratch
