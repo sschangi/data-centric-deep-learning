@@ -50,6 +50,7 @@ class ProductReviewEmbeddings(Dataset):
     # Notes:
     # --
     # Convert tokens to lowercase when updating vocab.
+    for review in self.data
     # ===============================
     return dict(vocab)
 

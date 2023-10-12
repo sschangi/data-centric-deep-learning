@@ -67,6 +67,8 @@ def get_hist_score(tr_probs, te_probs, bins=10):
   # 
   # Read the documentation for `np.histogram` carefully, in
   # particular what `bin_edges` represent.
+  score = 0
+  tr_heights, tr_bins = np.histogram(tr_probs.cpu().numpy(), bins=100, density= True)
   # ============================
   return score
 
