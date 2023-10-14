@@ -84,6 +84,12 @@ class JustTrainTwice(FlowSpec):
     # Type:
     # --
     # weights: torch.FloatTensor (length: |ds|)
+
+    probs = self.trainer.predict(model= self.system, dataloaders=dl , return_predictions =True)
+    probs = torch.cat(probs)
+    preds = torch.round(probs).long()
+    labels = torch.LongTensor(ds.data.label)
+    weights = (preds!=labels).long()
     # =============================
     self.weights = weights
     
@@ -146,6 +152,14 @@ class JustTrainTwice(FlowSpec):
     # Type:
     # --
     # acc_diff: float (> 0 and < 1)
+    # Calculate the accuracy for English reviews
+    en_accuracy = en_results['test_accuracy']
+
+    # Calculate the accuracy for Spanish reviews
+    es_accuracy = es_results['test_accuracy']
+
+    # Compute the difference in accuracy between English and Spanish reviews
+    acc_diff = abs(en_accuracy - es_accuracy)
     # =============================
 
     print(f'[lambd={lambd}] Results on English reviews:')
@@ -180,6 +194,9 @@ class JustTrainTwice(FlowSpec):
     # Notes:
     # -- 
     # Our solution is 2 lines of code.
+    acc_diffs = [x.acc_diff for x in inputs]
+    min_acc_diff = min(acc_diffs)
+    index = acc_diff_values.index(min_acc_diff)
     # =============================
 
     en_results = inputs[index].en_results
